@@ -1,0 +1,30 @@
+# Terraform / Terragrunt working dirs
+.terraform/
+.terragrunt-cache/
+*.tfstate
+*.tfstate.*
+crash.log
+
+# Plans embed secret values; never commit or upload them
+*.tfplan
+tfplan*
+plan.json
+
+# Local secrets and overrides
+*.tfvars
+!*.example.tfvars
+.env
+.env.*
+*.pem
+
+# Cluster credentials (Kind and EKS kubeconfigs must never be committed)
+kubeconfig*
+*.kubeconfig
+
+# Editor / OS
+.idea/
+.vscode/
+.DS_Store
+
+# Modules don't pin providers; the Terragrunt stack that consumes them does.
+modules/**/.terraform.lock.hcl

@@ -1,0 +1,5 @@
+# Every change needs the owner's review. prod and bootstrap are listed explicitly so the
+# intent survives if more owners are added for the rest of the tree later.
+*                 @princengcobo186-sketch
+/live/prod/       @princengcobo186-sketch
+/bootstrap/       @princengcobo186-sketch
