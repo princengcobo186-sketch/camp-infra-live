@@ -1,29 +1,50 @@
 # Shared definition of the argocd-bootstrap stack. Identical in every environment, local Kind
-# included; per-environment differences come from env.hcl. Running the same module on Kind and
-# on EKS is what makes the local loop a faithful rehearsal of the cloud one.
-
-locals {
-  env_vars = read_terragrunt_config(find_in_parent_folders("env.hcl"))
-}
+# included; per-environment differences come from env.hcl. Running the same module on Kind and on
+# EKS is what makes the local loop a faithful rehearsal of the cloud one.
 
 terraform {
   source = "${get_repo_root()}/modules//argocd-bootstrap"
 }
 
-# The helm provider talks to whichever cluster the kubeconfig context names. Local only for
-# now; the EKS stacks (Phase 3) add cluster endpoint and exec-based auth instead of a context.
-generate "helm_provider" {
-  path      = "helm_provider.tf"
-  if_exists = "overwrite_terragrunt"
+locals {
+  env_vars = read_terragrunt_config(find_in_parent_folders("env.hcl"))
+  is_local = local.env_vars.locals.environment == "local"
 
-  contents = <<-EOF
+  # Kind uses the kubeconfig context Kind created. EKS reads the cluster endpoint and CA from AWS
+  # and authenticates with a short-lived token from the caller's credentials, so no kubeconfig
+  # file or long-lived cluster secret is needed.
+  local_helm_provider = <<-EOT
     provider "helm" {
       kubernetes = {
         config_path    = "~/.kube/config"
-        config_context = "${local.env_vars.locals.kube_context}"
+        config_context = "${try(local.env_vars.locals.kube_context, "")}"
       }
     }
-  EOF
+  EOT
+
+  eks_helm_provider = <<-EOT
+    data "aws_eks_cluster" "this" {
+      name = "${try(local.env_vars.locals.cluster_name, "")}"
+    }
+
+    data "aws_eks_cluster_auth" "this" {
+      name = "${try(local.env_vars.locals.cluster_name, "")}"
+    }
+
+    provider "helm" {
+      kubernetes = {
+        host                   = data.aws_eks_cluster.this.endpoint
+        cluster_ca_certificate = base64decode(data.aws_eks_cluster.this.certificate_authority[0].data)
+        token                  = data.aws_eks_cluster_auth.this.token
+      }
+    }
+  EOT
+}
+
+generate "helm_provider" {
+  path      = "helm_provider.tf"
+  if_exists = "overwrite_terragrunt"
+  contents  = local.is_local ? local.local_helm_provider : local.eks_helm_provider
 }
 
 inputs = {
