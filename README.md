@@ -48,5 +48,5 @@ your credentials, so credentials for the wrong account fail at plan time.
 
 ## Status
 
-Phase 0 (foundations). See [docs/platform-plan.md](docs/platform-plan.md) for the full plan
+Phase 1 (local loop) in progress: see [docs/local-development.md](docs/local-development.md). See [docs/platform-plan.md](docs/platform-plan.md) for the full plan
 and [docs/adr/](docs/adr/) for the decisions behind it.

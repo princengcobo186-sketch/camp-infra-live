@@ -35,9 +35,13 @@ locals {
   # Backend bodies for generate "backend" below. generate (not remote_state) because the two
   # backends take different config shapes and remote_state cannot switch between them.
   # bootstrap/ owns the bucket; nothing here creates or reconfigures it.
+  # State sits beside the stack (gitignored), not in .terragrunt-cache, which is disposable:
+  # losing local state would orphan the Argo CD install in the Kind cluster.
   backend_local = <<-EOF
     terraform {
-      backend "local" {}
+      backend "local" {
+        path = "${get_terragrunt_dir()}/terraform.tfstate"
+      }
     }
   EOF
 

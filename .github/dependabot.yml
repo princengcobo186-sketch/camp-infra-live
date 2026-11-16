@@ -1,4 +1,4 @@
-# Keeps SHA-pinned actions current through reviewed PRs.
+# Keeps SHA-pinned actions and Terraform providers current through reviewed PRs.
 version: 2
 updates:
   - package-ecosystem: github-actions
@@ -8,4 +8,7 @@ updates:
     groups:
       actions:
         patterns: ["*"]
-  # Terraform ecosystem is added in Phase 1, when modules/ and bootstrap/ exist.
+  - package-ecosystem: terraform
+    directories: ["/modules/*"]
+    schedule:
+      interval: weekly
