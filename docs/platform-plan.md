@@ -1,6 +1,8 @@
 # CAMP Platform Plan: 3-Repo GitOps Payment Platform
 
-Status: accepted (2026-11-10). Phase 0 in progress. Nothing has been applied to AWS.
+Status: accepted (2026-11-10). The dev EKS proof gates were verified on 2026-11-17; AWS teardown
+is pending to avoid ongoing costs. Phases 4-5 remain planned, and no staging/prod clusters were
+applied. See [the dev proof record](phase3-dev-proof.md).
 
 ## 0. Ground truth (verified, not assumed)
 
@@ -66,7 +68,7 @@ Rule: images are built **once** in repo 3 and promoted by tag. Nothing is ever r
 
 **Kind vs ECR:** in local dev, images are built and loaded with `kind load docker-image`. That's zero cloud cost and needs no 12h ECR token handling. ECR is the single registry for every image that gets *promoted* (dev and above). Optional: a `make dev-ecr` target pulls a released image from ECR into Kind to reproduce an env bug.
 
-**Cost reality (eu-north-1):** each EKS cluster costs about $73/mo for the control plane, plus nodes and a NAT gateway. Defaults: one NAT gateway in non-prod, SPOT nodes in dev, and a `destroy` workflow so clusters are ephemeral (stand up, demo, tear down). Staging stays in code but is only applied when you're exercising the full promotion path.
+**Cost reality (eu-north-1):** each EKS cluster costs about $73/mo for the control plane, plus nodes and a NAT gateway. Defaults: one NAT gateway in non-prod and SPOT nodes in dev. An automated `destroy` workflow is still planned, not implemented; until then, dev is applied and destroyed manually with Terragrunt. Staging stays in code but is only applied when you're exercising the full promotion path.
 
 **Blast radius:** this is one AWS account, so isolation comes from per-env state prefixes, per-env CI roles that can only touch their own state prefix, `allowed_account_ids`, and the env guard regex. Enterprise would use an account per env. The new AWS experience allows multiple "projects" (one account each), so that's a documented upgrade path, not day-1 scope.
 
@@ -219,10 +221,10 @@ Payments-specific guardrails: no real card data (PCI scope), a fake provider ada
 
 | Phase | Scope | Exit gate |
 |---|---|---|
-| **0. Foundations** | Restructure repo 1, `.tool-versions` (+kind/kubectl/helm), pre-commit, create the three GitHub repos, branch protection, CODEOWNERS | `pre-commit run -a` clean; empty CI green in all 3 repos |
-| **1. Local loop ($0)** | Repo 3 minimal service + Dockerfile + chart; repo 1 `kind/` + `live/local/argocd-bootstrap`; repo 2 `clusters/local` with payment-service | `make dev` → Argo shows Synced/Healthy → `curl` POST /payments works → editing a value in repo 2 auto-syncs |
-| **2. AWS bootstrap** | `bootstrap/` (state bucket, CI identities), `live/shared/ecr`; repo 3 `release.yml` pushes to ECR | Image in ECR with immutable tag and scan results; re-push of the same tag is rejected |
-| **3. dev on EKS** | `live/dev/{vpc,eks,pod-identity,argocd-bootstrap}`; platform add-ons; app from ECR | Read the plan diff fully → apply → Argo Healthy → smoke test via ALB → Grafana shows request metrics → `destroy.yml` tears it down cleanly |
+| **0. Foundations** | Restructure repo 1, `.tool-versions` (+kind/kubectl/helm), pre-commit, create the three GitHub repos, branch protection, CODEOWNERS | Implemented; CI and pre-commit pass |
+| **1. Local loop ($0)** | Repo 3 minimal service + Dockerfile + chart; repo 1 `kind/` + `live/local/argocd-bootstrap`; repo 2 `clusters/local` with payment-service | Argo auto-sync on Kind verified; see GitOps PRs #1-#3 |
+| **2. AWS bootstrap** | `bootstrap/` (state bucket, CI identities), `live/shared/ecr`; repo 3 `release.yml` pushes to ECR | ECR release pipeline passed and SHA-tagged images were pushed |
+| **3. dev on EKS** | `live/dev/{vpc,eks,pod-identity,argocd-bootstrap}`; platform add-ons; app from ECR | Argo Healthy, internal ALB and payment smoke tests passed, and Grafana queried payment metrics; teardown pending |
 | **4. Promotion** | Automated dev tag-bump PR; staging/prod stacks; prod gates | The same digest is observed running in dev → staging → prod; a rollback by git revert is demonstrated |
 | **5. Hardening** | Kyverno policies enforced, NetworkPolicies, cosign sign/verify, alert rules + receiver, runbooks, cost budget alarm | Policy blocks a `:latest` / non-ECR image; firing a test alert reaches you |
 
