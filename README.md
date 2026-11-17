@@ -48,5 +48,7 @@ your credentials, so credentials for the wrong account fail at plan time.
 
 ## Status
 
-Phase 1 (local loop) in progress: see [docs/local-development.md](docs/local-development.md). See [docs/platform-plan.md](docs/platform-plan.md) for the full plan
-and [docs/adr/](docs/adr/) for the decisions behind it.
+The dev EKS proof of concept passed its runtime checks on 2026-11-17. Evidence and scope are
+recorded in [docs/phase3-dev-proof.md](docs/phase3-dev-proof.md). AWS teardown is pending to avoid
+ongoing costs. Staging/prod promotion and production hardening are not complete; see
+[docs/platform-plan.md](docs/platform-plan.md) and [docs/adr/](docs/adr/).
