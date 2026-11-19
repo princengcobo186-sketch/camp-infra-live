@@ -48,7 +48,9 @@ your credentials, so credentials for the wrong account fail at plan time.
 
 ## Status
 
-The dev EKS proof of concept passed its runtime checks on 2026-11-17. Evidence and scope are
-recorded in [docs/phase3-dev-proof.md](docs/phase3-dev-proof.md). AWS teardown is pending to avoid
-ongoing costs. Staging/prod promotion and production hardening are not complete; see
-[docs/platform-plan.md](docs/platform-plan.md) and [docs/adr/](docs/adr/).
+The dev EKS proof of concept passed its runtime checks; evidence and scope are recorded in
+[docs/phase3-dev-proof.md](docs/phase3-dev-proof.md). The dev EKS/VPC stacks and shared ECR
+repository have since been destroyed. The bootstrap state bucket and Terraform state are retained
+for recovery and audit; see [docs/teardown.md](docs/teardown.md). Staging/prod promotion and
+production hardening are not complete; see [docs/platform-plan.md](docs/platform-plan.md) and
+[docs/adr/](docs/adr/).

@@ -1,8 +1,8 @@
 # CAMP Platform Plan: 3-Repo GitOps Payment Platform
 
-Status: accepted (2026-11-10). The dev EKS proof gates were verified on 2026-11-17; AWS teardown
-is pending to avoid ongoing costs. Phases 4-5 remain planned, and no staging/prod clusters were
-applied. See [the dev proof record](phase3-dev-proof.md).
+Status: accepted (2026-11-10). The dev EKS proof gates were verified on 2026-11-17 and the AWS
+test environment was subsequently destroyed. Phases 4-5 remain planned, and no staging/prod
+clusters were applied. See the [dev proof](phase3-dev-proof.md) and [teardown record](teardown.md).
 
 ## 0. Ground truth (verified, not assumed)
 
@@ -224,7 +224,7 @@ Payments-specific guardrails: no real card data (PCI scope), a fake provider ada
 | **0. Foundations** | Restructure repo 1, `.tool-versions` (+kind/kubectl/helm), pre-commit, create the three GitHub repos, branch protection, CODEOWNERS | Implemented; CI and pre-commit pass |
 | **1. Local loop ($0)** | Repo 3 minimal service + Dockerfile + chart; repo 1 `kind/` + `live/local/argocd-bootstrap`; repo 2 `clusters/local` with payment-service | Argo auto-sync on Kind verified; see GitOps PRs #1-#3 |
 | **2. AWS bootstrap** | `bootstrap/` (state bucket, CI identities), `live/shared/ecr`; repo 3 `release.yml` pushes to ECR | ECR release pipeline passed and SHA-tagged images were pushed |
-| **3. dev on EKS** | `live/dev/{vpc,eks,pod-identity,argocd-bootstrap}`; platform add-ons; app from ECR | Argo Healthy, internal ALB and payment smoke tests passed, and Grafana queried payment metrics; teardown pending |
+| **3. dev on EKS** | `live/dev/{vpc,eks,pod-identity,argocd-bootstrap}`; platform add-ons; app from ECR | Argo Healthy, internal ALB and payment smoke tests passed, and Grafana queried payment metrics; AWS dev stacks and shared ECR were destroyed after the proof |
 | **4. Promotion** | Automated dev tag-bump PR; staging/prod stacks; prod gates | The same digest is observed running in dev → staging → prod; a rollback by git revert is demonstrated |
 | **5. Hardening** | Kyverno policies enforced, NetworkPolicies, cosign sign/verify, alert rules + receiver, runbooks, cost budget alarm | Policy blocks a `:latest` / non-ECR image; firing a test alert reaches you |
 

@@ -2,7 +2,8 @@
 
 Verified 2026-11-17 in `eu-north-1`. The dev environment demonstrated the intended path from
 Terraform foundations through GitOps deployment, an internal load balancer, the payment API, and
-metrics collection. AWS teardown is pending; this is not a production-readiness claim.
+metrics collection. The test environment has since been torn down; this is not a
+production-readiness claim. See [the teardown record](teardown.md).
 
 ## Evidence
 
